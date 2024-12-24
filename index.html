@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefeitura da Serra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 70%;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .input-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .added-names {
+            margin-top: 10px;
+        }
+        .added-name {
+            margin-bottom: 10px;
+        }
+        .added-name button {
+            margin-left: 10px;
+            background-color: red;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .final-btn-group button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .final-btn-group button:hover {
+            background-color: #0056b3;
+        }
+        .finalizado {
+            background-color: green;
+        }
+        .finalizado:hover {
+            background-color: #006400;
+        }
+        .listagem-container {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+        }
+        .listagem-container h2 {
+            color: #333;
+        }
+        .listagem-container .category {
+            margin-bottom: 15px;
+        }
+        .category h3 {
+            font-size: 16px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .category ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .category ul li {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pagina01" class="container">
+        <h1>Prefeitura da Serra</h1>
+
+        <!-- Bloco 1: Descrição do evento -->
+        <div class="section">
+            <div class="input-group">
+                <input type="text" id="event01" placeholder="Descrição do evento">
+                <button id="saveButton" onclick="saveEvent()">Salvar</button>
+            </div>
+            <div id="savedEventName"></div>
+        </div>
+
+        <!-- Bloco 2: Autoridades Presentes -->
+        <div class="section">
+            <h2>Autoridades Presentes</h2>
+            <div id="authoritiesList"></div>
+        </div>
+
+        <!-- Bloco 3: Adicionar outros -->
+        <div class="section">
+            <h2>Adicionar outros:</h2>
+            <div class="input-group">
+                <input type="text" id="addName" placeholder="Adicionar nome">
+                <button onclick="addOtherName()">Adicionar</button>
+            </div>
+            <div id="addedNamesList" class="added-names"></div>
+        </div>
+
+        <!-- Bloco 4: Finalizar -->
+        <div class="section final-btn-group">
+            <button id="finalButton" onclick="finalize()" class="finalizado">Finalizar</button>
+            <button id="listButton" onclick="listAuthorities()">Listar</button>
+        </div>
+    </div>
+
+    <script>
+        // Lista de autoridades
+        const authorities = {
+            "Destaque": [
+                "Governador: Renato Casagrande",
+                "Vice-Governador: Ricardo Ferraço",
+                "Prefeito: Sergio Vidigal",
+                "Deputada: Sueli Vidigal"
+            ],
+            "Deputados Estaduais": [
+                "Alexandre Xambinho",
+                "Vandinho Leite",
+                "Fábio Duarte",
+                "Pablo Muribeca"
+            ],
+            "Vereadores": [
+                "Saulinho da Academia", "Teilton Valim", "Pastor Dinho Souza", "Paulinho do Churrasquinho",
+                "Rafael Estrela do Mar", "Fred", "Professor Rurdiney", "Andréa Duarte", "Professor Renato Ribeiro",
+                "Leandro Ferraço", "Rodrigo Caldeira", "Agente Dias", "Dr. William Miranda", "Jefinho do Balneário",
+                "Henrique Lima", "Antonio Cea", "Cleber Serrinha", "George Guanabara", "Raphaela Moraes", "Cabo Rodrigues",
+                "Stefano Andrade", "Pequeno do Gás", "Wellington Alemão"
+            ],
+            "Ex-Vereadores": [
+                "Adriano Galinhão", "Raposão", "Ericson Duarte", "Elcimara Loureiro", "Willian da Elétrica",
+                "Professor Alex Bulhões", "Sergio Peixoto", "Rodrigo Caçulo", "Anderson Muniz", "Professor Artur Costa", "Pablo Muribeca"
+            ]
+        };
+
+        let eventName = '';
+        let selectedAuthorities = [];
+        let addedNames = [];
+
+        // Carregar lista de autoridades
+        function loadAuthorities() {
+            let authoritiesHTML = '';
+            for (let category in authorities) {
+                authoritiesHTML += `<div class="category"><h3>${category}</h3><ul>`;
+                authorities[category].forEach((authority) => {
+                    authoritiesHTML += `
+                        <li>
+                            <input type="checkbox" class="checkbox-authority" value="${authority}"> ${authority}
+                        </li>
+                    `;
+                });
+                authoritiesHTML += '</ul></div>';
+            }
+            document.getElementById('authoritiesList').innerHTML = authoritiesHTML;
+        }
+
+        // Salvar evento
+        function saveEvent() {
+            eventName = document.getElementById('event01').value;
+            if (eventName) {
+                document.getElementById('savedEventName').innerText = `Evento: ${eventName}`;
+                document.getElementById('saveButton').innerText = "Salvo";
+            }
+        }
+
+        // Adicionar outros nomes
+        function addOtherName() {
+            const newName = document.getElementById('addName').value.trim();
+            if (newName) {
+                addedNames.push(newName);
+                renderAddedNames();
+                document.getElementById('addName').value = '';
+            }
+        }
+
+        // Remover nome da lista de "Adicionados"
+        function removeName(index) {
+            addedNames.splice(index, 1);
+            renderAddedNames();
+        }
+
+        // Renderizar os nomes adicionados
+        function renderAddedNames() {
+            const addedNamesList = document.getElementById('addedNamesList');
+            addedNamesList.innerHTML = '';
+            addedNames.forEach((name, index) => {
+                addedNamesList.innerHTML += `
+                    <div class="added-name">
+                        ${name} <button onclick="removeName(${index})">Remover</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Finalizar evento
+        function finalize() {
+            selectedAuthorities = [];
+            document.querySelectorAll('.checkbox-authority:checked').forEach((checkbox) => {
+                selectedAuthorities.push(checkbox.value);
+            });
+
+            selectedAuthorities = [...selectedAuthorities, ...addedNames];
+            document.getElementById('finalButton').innerText = "Finalizado";
+            document.getElementById('finalButton').classList.add('finalizado');
+        }
+
+        // Listar autoridades em nova guia
+        function listAuthorities() {
+            const authoritiesHTMLForPage2 = organizeAuthoritiesList([...selectedAuthorities, ...addedNames]);
+            const newWindow = window.open();
+            newWindow.document.write(`
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Lista de Autoridades</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f4f4f4;
+                        }
+                        .listagem-container {
+                            max-width: 1000px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            background-color: white;
+                            border-radius: 8px;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        .category {
+                            margin-bottom: 15px;
+                        }
+                        .category h3 {
+                            font-size: 16px;
+                            color: #007bff;
+                            margin-bottom: 10px;
+                        }
+                        .category ul {
+                            list-style-type: none;
+                            padding-left: 0;
+                        }
+                        .category ul li {
+                            padding: 5px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="listagem-container">
+                        <h2>Autoridades Presentes - ${eventName || 'Prefeitura da Serra'}</h2>
+                        ${authoritiesHTMLForPage2}
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Organizar lista de autoridades por cargos
+        function organizeAuthoritiesList(selectedAuthorities) {
+            const categorizedList = {
+                "Destaque": [],
+                "Deputados Estaduais": [],
+                "Vereadores": [],
+                "Ex-Vereadores": [],
+                "Outros": []
+            };
+
+            selectedAuthorities.forEach(authority => {
+                let found = false;
+                for (let category in authorities) {
+                    if (authorities[category].includes(authority)) {
+                        categorizedList[category].push(authority);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    categorizedList["Outros"].push(authority);
+                }
+            });
+
+            let html = '';
+            for (let category in categorizedList) {
+                if (categorizedList[category].length > 0) {
+                    html += `<div class="category"><h3>${category}</h3><ul>`;
+                    categorizedList[category].forEach(name => {
+                        html += `<li>${name}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+            }
+
+            return html;
+        }
+
+        // Carregar autoridades na página inicial
+        loadAuthorities();
+    </script>
+
+</body>
+</html>
